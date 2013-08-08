@@ -27,13 +27,31 @@ class YiiSelectize extends CInputWidget
     /** @var  $_clientScript CClientScript */
     private $_clientScript;
 
+    /** @var array selectize.js options */
     public $options = array();
-    protected $defaultOptions = array();
 
+    /** @var array defaultOptions can be overwritten from the config using widgetFactory */
+    public $defaultOptions = array();
+
+    /** @var array the available options list */
     public $data = array();
+
+    /** @var array list of event name => callback; this is just a helper to avoid passing them in the options array */
+    public $callbacks = array();
+
+    /** @var array list of valid callbacks */
+    // https://github.com/brianreavis/selectize.js/blob/master/docs/usage.md#callbacks
+    protected $validCallbacks = array(
+        'load', 'score', 'onInitialize', 'onChange', 'onItemAdd', 'onItemRemove', 'onClear',
+        'onDelete', 'onOptionAdd', 'onOptionRemove', 'onDropdownOpen', 'onDropdownClose',
+        'onType', 'onLoad'
+    );
 
     /** @var string html element selector */
     public $elementSelector = null;
+
+    /** @var string alias to htmlOptions['placeholder'] */
+    public $placeholder = '';
 
     /** @var bool if true will include the es5-shim script */
     public $ie8support = true;
@@ -109,9 +127,8 @@ class YiiSelectize extends CInputWidget
             $this->elementSelector = '#' . $this->id;
         }
 
-
+        // Setup widget & html options:
         $this->setupOptions();
-
 
         if ($this->hasModel()) {
             echo CHtml::activeDropDownList($this->model, $this->attribute, $this->data, $this->htmlOptions);
@@ -120,7 +137,17 @@ class YiiSelectize extends CInputWidget
             echo CHtml::dropDownList($this->name, $this->value, $this->data, $this->htmlOptions);
         }
 
-        $selectizeOptions = CJavaScript::encode(CMap::mergeArray($this->defaultOptions, $this->options));
+        $optionsArray = CMap::mergeArray($this->defaultOptions, $this->options);
+
+
+        // set the callbacks handlers:
+        foreach ($this->callbacks as $event => $jsFunction) {
+            if (in_array($event, $this->validCallbacks)) {
+                $optionsArray[$event] = 'js:' . $jsFunction;
+            }
+        }
+
+        $selectizeOptions = CJavaScript::encode($optionsArray);
         $initSelectize = "$('{$this->elementSelector}').selectize({$selectizeOptions});";
         $this->_clientScript->registerScript(__CLASS__ . '_' . $this->id, $initSelectize);
     }
@@ -130,9 +157,12 @@ class YiiSelectize extends CInputWidget
         $this->publishAssets();
         $this->registerScripts();
 
-        $this->defaultOptions = array(
-            'create' => true,
-        );
+        // Setup the widget default options:
+        if (empty($this->defaultOptions)) { // check if not initialized by widgetFactory from the config
+            $this->defaultOptions = array(
+                'create' => true,
+            );
+        }
     }
 
 
@@ -170,6 +200,11 @@ class YiiSelectize extends CInputWidget
             if (stripos($this->htmlOptions['style'], 'width:') === false) {
                 $this->htmlOptions['style'] .= ' width: 100%;';
             }
+        }
+
+        // If the placeholder property is set we'll overwrite the htmlOptions attribute
+        if (!empty($this->placeholder)) {
+            $this->htmlOptions['placeholder'] = $this->placeholder;
         }
 
     }
