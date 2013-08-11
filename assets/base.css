@@ -1,6 +1,8 @@
 
 .yii-selectize {
-
+    margin-top: 0.2em;
+    margin-bottom: 0.5em;
+    min-width: 180px;
 }
 
 .yii-selectize.full-width {
@@ -12,6 +14,10 @@
 .yii-selectize .selectize-input,
 .yii-selectize .selectize-input input {
     padding: 5px;
+}
+
+.yii-selectize .selectize-input input {
+    margin: 0;
 }
 
 /* Reduce input padding: */
@@ -37,3 +43,4 @@
     background: #298dcd;
     color: #FFFFFF;
 }
+

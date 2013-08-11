@@ -5,7 +5,7 @@
  *
  * @author  Giovanni Derks <giovdk21@gmail.com>
  * @link    https://github.com/giovdk21/yii-selectize
- * @version 0.1
+ * @version 0.2
  *
  * License: MIT License (http://www.opensource.org/licenses/mit-license.php)
  *
@@ -52,6 +52,9 @@ class YiiSelectize extends CInputWidget
 
     /** @var string alias to htmlOptions['placeholder'] */
     public $placeholder = '';
+
+    /** @var string alias to htmlOptions['multiple'] */
+    public $multiple = false;
 
     /** @var bool if true will include the es5-shim script */
     public $ie8support = true;
@@ -176,13 +179,9 @@ class YiiSelectize extends CInputWidget
             $this->htmlOptions['class'] = '';
         }
 
-        // Add class span3 if used with bootstrap without any class specified and not at 100% width
-        if ($this->useWithBootstrap && empty($this->htmlOptions['class']) && !$this->fullWidth) {
-            $this->htmlOptions['class'] = 'span3';
-        }
-
         // Include the base css if required
         if ($this->includeBaseCss) {
+
             if (stripos($this->htmlOptions['class'], 'yii-selectize') === false) {
                 $this->htmlOptions['class'] .= ' yii-selectize';
             }
@@ -205,6 +204,11 @@ class YiiSelectize extends CInputWidget
         // If the placeholder property is set we'll overwrite the htmlOptions attribute
         if (!empty($this->placeholder)) {
             $this->htmlOptions['placeholder'] = $this->placeholder;
+        }
+
+        // If the multiple property is set we'll overwrite the htmlOptions attribute
+        if (!empty($this->multiple)) {
+            $this->htmlOptions['multiple'] = $this->multiple;
         }
 
     }
