@@ -1,6 +1,6 @@
 {
 	"name": "selectize",
-	"version": "0.6.13",
+	"version": "0.7.3",
 	"title": "Selectize.js",
 	"author": {
 		"name": "Brian Reavis",
@@ -27,6 +27,6 @@
 		}
 	],
 	"dependencies": {
-		"jquery": ">=1.5"
+		"jquery": ">=1.6"
 	}
 }

@@ -26,13 +26,6 @@
     background: white;
 }
 
-/* Remove bottom border / shadow: */
-.selectize-control.single .selectize-input {
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-}
-
 /* Color of the active menu item */
 .selectize-dropdown .active {
     background-color: #C9E0ED;

@@ -68,6 +68,12 @@ class YiiSelectize extends CInputWidget
     /** @var bool if the widget is used alongside twitter bootstrap */
     public $useWithBootstrap = false;
 
+    /** @var string the name of the css theme to be used; if empty the default one will be picked */
+    public $cssTheme;
+
+    /** @var array the list of available css themes */
+    private $_validCssThemes = array('default','legacy','bootstrap2','bootstrap3');
+
 
     /**
      * Publishes the assets
@@ -98,13 +104,29 @@ class YiiSelectize extends CInputWidget
 
         // JS
         if (YII_DEBUG) {
-            $this->_clientScript->registerScriptFile($this->_vendorBaseUrl . '/selectize.js');
+            $this->_clientScript->registerScriptFile($this->_vendorBaseUrl . '/dist/js/standalone/selectize.js');
         } else {
-            $this->_clientScript->registerScriptFile($this->_vendorBaseUrl . '/selectize.min.js');
+            $this->_clientScript->registerScriptFile($this->_vendorBaseUrl . '/dist/js/standalone/selectize.min.js');
         }
 
         // CSS
-        $this->_clientScript->registerCssFile($this->_vendorBaseUrl . '/selectize.css');
+        $this->_clientScript->registerCssFile($this->_vendorBaseUrl . '/dist/css/selectize.css');
+
+        $cssTheme = 'default';
+        if (!empty($this->cssTheme)) {
+            if (in_array($this->cssTheme, $this->_validCssThemes)) {
+                $cssTheme = $this->cssTheme;
+            }
+            else {
+                throw new CException('Please provide a valid theme name: '.implode(',', $this->_validCssThemes));
+            }
+        }
+        elseif ($this->useWithBootstrap) {
+            $cssTheme = 'bootstrap3';
+        }
+
+        $this->_clientScript->registerCssFile($this->_vendorBaseUrl . "/dist/css/selectize.{$cssTheme}.css");
+
 
         if ($this->includeBaseCss) {
             $this->_clientScript->registerCssFile($this->_extBaseUrl . '/base.css');

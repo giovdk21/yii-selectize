@@ -14,8 +14,12 @@
  * @author Brian Reavis <brian@thirdroute.com>
  */
 
-Selectize.registerPlugin('remove_button', function(options) {
+Selectize.define('remove_button', function(options) {
 	var self = this;
+
+	if (self.settings.mode === 'single') {
+		return;
+	}
 
 	// override the item rendering method to add a "x" to each
 	this.settings.render.item = function(data) {
