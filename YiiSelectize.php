@@ -5,7 +5,7 @@
  *
  * @author  Giovanni Derks <giovdk21@gmail.com>
  * @link    https://github.com/giovdk21/yii-selectize
- * @version 0.2
+ * @version 0.3
  *
  * License: MIT License (http://www.opensource.org/licenses/mit-license.php)
  *
@@ -35,6 +35,9 @@ class YiiSelectize extends CInputWidget
 
     /** @var array the available options list */
     public $data = array();
+
+    /** @var array the list of selected options when using multiple selection */
+    public $selectedValues = array();
 
     /** @var array list of event name => callback; this is just a helper to avoid passing them in the options array */
     public $callbacks = array();
@@ -231,6 +234,13 @@ class YiiSelectize extends CInputWidget
         // If the multiple property is set we'll overwrite the htmlOptions attribute
         if (!empty($this->multiple)) {
             $this->htmlOptions['multiple'] = $this->multiple;
+        }
+
+        // Set the selected attributed to the given options
+        if (!empty($this->selectedValues)) {
+            foreach ($this->selectedValues as $valueId) {
+                $this->htmlOptions['options'][$valueId]['selected'] = true;
+            }
         }
 
     }
