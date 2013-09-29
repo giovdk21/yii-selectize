@@ -59,6 +59,7 @@ var Selectize = function($input, settings) {
 
 	self.initializePlugins(self.settings.plugins);
 	self.setupCallbacks();
+	self.setupTemplates();
 	self.setup();
 };
 
@@ -108,8 +109,7 @@ $.extend(Selectize.prototype, {
 		$dropdown_content = $('<div>').addClass(settings.dropdownContentClass).appendTo($dropdown);
 
 		$wrapper.css({
-			width: self.$input[0].style.width,
-			display: self.$input.css('display')
+			width: self.$input[0].style.width
 		});
 
 		if (self.plugins.names.length) {
@@ -230,6 +230,35 @@ $.extend(Selectize.prototype, {
 	},
 
 	/**
+	 * Sets up default rendering functions.
+	 */
+	setupTemplates: function() {
+		var self = this;
+		var field_label = self.settings.labelField;
+		var field_optgroup = self.settings.optgroupLabelField;
+
+		var templates = {
+			'optgroup': function(data) {
+				return '<div class="optgroup">' + data.html + '</div>';
+			},
+			'optgroup_header': function(data, escape) {
+				return '<div class="optgroup-header">' + escape(data[field_optgroup]) + '</div>';
+			},
+			'option': function(data, escape) {
+				return '<div class="option">' + escape(data[field_label]) + '</div>';
+			},
+			'item': function(data, escape) {
+				return '<div class="item">' + escape(data[field_label]) + '</div>';
+			},
+			'option_create': function(data, escape) {
+				return '<div class="create">Add <strong>' + escape(data.input) + '</strong>&hellip;</div>';
+			},
+		};
+
+		self.settings.render = $.extend({}, templates, self.settings.render);
+	},
+
+	/**
 	 * Maps fired events to callbacks provided
 	 * in the settings used when creating the control.
 	 */
@@ -327,7 +356,7 @@ $.extend(Selectize.prototype, {
 				e.preventDefault();
 				return;
 			case KEY_RETURN:
-				if (self.$activeOption) {
+				if (self.isOpen && self.$activeOption) {
 					self.onOptionSelect({currentTarget: self.$activeOption});
 				}
 				e.preventDefault();
@@ -949,7 +978,7 @@ $.extend(Selectize.prototype, {
 	 */
 	addOptionGroup: function(id, data) {
 		this.optgroups[id] = data;
-		this.trigger('optgroup_add', value, data);
+		this.trigger('optgroup_add', id, data);
 	},
 
 	/**
@@ -1047,8 +1076,7 @@ $.extend(Selectize.prototype, {
 	 * @returns {object}
 	 */
 	getOption: function(value) {
-		value = hash_key(value);
-		return value ? this.$dropdown_content.find('[data-selectable]').filter('[data-value="' + escape_quotes(value) + '"]:first') : $();
+		return this.getElementWithValue(value, this.$dropdown_content.find('[data-selectable]'));
 	},
 
 	/**
@@ -1067,6 +1095,28 @@ $.extend(Selectize.prototype, {
 	},
 
 	/**
+	 * Finds the first element with a "data-value" attribute
+	 * that matches the given value.
+	 *
+	 * @param {mixed} value
+	 * @param {object} $els
+	 * @return {object}
+	 */
+	getElementWithValue: function(value, $els) {
+		value = hash_key(value);
+
+		if (value) {
+			for (var i = 0, n = $els.length; i < n; i++) {
+				if ($els[i].getAttribute('data-value') === value) {
+					return $($els[i]);
+				}
+			}
+		}
+
+		return $();
+	},
+
+	/**
 	 * Returns the jQuery element of the item
 	 * matching the given value.
 	 *
@@ -1074,7 +1124,7 @@ $.extend(Selectize.prototype, {
 	 * @returns {object}
 	 */
 	getItem: function(value) {
-		return this.$control.children('[data-value="' + escape_quotes(hash_key(value)) + '"]');
+		return this.getElementWithValue(value, this.$control.children());
 	},
 
 	/**
@@ -1429,7 +1479,7 @@ $.extend(Selectize.prototype, {
 		}
 
 		// allow the callback to abort
-		if (!values.length || (typeof self.settings.onDelete === 'function' && self.settings.onDelete(values) === false)) {
+		if (!values.length || (typeof self.settings.onDelete === 'function' && self.settings.onDelete.apply(self, [values]) === false)) {
 			return false;
 		}
 
@@ -1640,29 +1690,7 @@ $.extend(Selectize.prototype, {
 		}
 
 		// render markup
-		if (self.settings.render && typeof self.settings.render[templateName] === 'function') {
-			html = self.settings.render[templateName].apply(this, [data, escape_html]);
-		} else {
-			label = data[self.settings.labelField];
-			switch (templateName) {
-				case 'optgroup':
-					html = '<div class="optgroup">' + data.html + "</div>";
-					break;
-				case 'optgroup_header':
-					label = data[self.settings.optgroupLabelField];
-					html = '<div class="optgroup-header">' + escape_html(label) + '</div>';
-					break;
-				case 'option':
-					html = '<div class="option">' + escape_html(label) + '</div>';
-					break;
-				case 'item':
-					html = '<div class="item">' + escape_html(label) + '</div>';
-					break;
-				case 'option_create':
-					html = '<div class="create">Add <strong>' + escape_html(data.input) + '</strong>&hellip;</div>';
-					break;
-			}
-		}
+		html = self.settings.render[templateName].apply(this, [data, escape_html]);
 
 		// add mandatory attributes
 		if (templateName === 'option' || templateName === 'option_create') {

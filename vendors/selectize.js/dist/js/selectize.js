@@ -1,5 +1,5 @@
 /**
- * selectize.js (v0.7.3)
+ * selectize.js (v0.7.7)
  * Copyright (c) 2013 Brian Reavis & contributors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this
@@ -155,17 +155,6 @@
 			.replace(/</g, '&lt;')
 			.replace(/>/g, '&gt;')
 			.replace(/"/g, '&quot;');
-	};
-	
-	/**
-	 * Escapes quotation marks with backslashes. Useful
-	 * for escaping values for use in CSS attribute selectors.
-	 *
-	 * @param {string} str
-	 * @return {string}
-	 */
-	var escape_quotes = function(str) {
-		return str.replace(/(['"])/g, '\\$1');
 	};
 	
 	var hook = {};
@@ -510,6 +499,7 @@
 	
 		self.initializePlugins(self.settings.plugins);
 		self.setupCallbacks();
+		self.setupTemplates();
 		self.setup();
 	};
 	
@@ -559,8 +549,7 @@
 			$dropdown_content = $('<div>').addClass(settings.dropdownContentClass).appendTo($dropdown);
 	
 			$wrapper.css({
-				width: self.$input[0].style.width,
-				display: self.$input.css('display')
+				width: self.$input[0].style.width
 			});
 	
 			if (self.plugins.names.length) {
@@ -681,6 +670,35 @@
 		},
 	
 		/**
+		 * Sets up default rendering functions.
+		 */
+		setupTemplates: function() {
+			var self = this;
+			var field_label = self.settings.labelField;
+			var field_optgroup = self.settings.optgroupLabelField;
+	
+			var templates = {
+				'optgroup': function(data) {
+					return '<div class="optgroup">' + data.html + '</div>';
+				},
+				'optgroup_header': function(data, escape) {
+					return '<div class="optgroup-header">' + escape(data[field_optgroup]) + '</div>';
+				},
+				'option': function(data, escape) {
+					return '<div class="option">' + escape(data[field_label]) + '</div>';
+				},
+				'item': function(data, escape) {
+					return '<div class="item">' + escape(data[field_label]) + '</div>';
+				},
+				'option_create': function(data, escape) {
+					return '<div class="create">Add <strong>' + escape(data.input) + '</strong>&hellip;</div>';
+				},
+			};
+	
+			self.settings.render = $.extend({}, templates, self.settings.render);
+		},
+	
+		/**
 		 * Maps fired events to callbacks provided
 		 * in the settings used when creating the control.
 		 */
@@ -704,20 +722,6 @@
 					fn = this.settings[callbacks[key]];
 					if (fn) this.on(key, fn);
 				}
-			}
-		},
-	
-		/**
-		 * Triggers a callback defined in the user-provided settings.
-		 * Events: onItemAdd, onOptionAdd, etc
-		 *
-		 * @param {string} event
-		 */
-		triggerCallback: function(event) {
-			var args;
-			if (typeof this.settings[event] === 'function') {
-				args = Array.prototype.slice.apply(arguments, [1]);
-				this.settings[event].apply(this, args);
 			}
 		},
 	
@@ -1414,7 +1418,7 @@
 		 */
 		addOptionGroup: function(id, data) {
 			this.optgroups[id] = data;
-			this.trigger('optgroup_add', value, data);
+			this.trigger('optgroup_add', id, data);
 		},
 	
 		/**
@@ -1512,8 +1516,7 @@
 		 * @returns {object}
 		 */
 		getOption: function(value) {
-			value = hash_key(value);
-			return value ? this.$dropdown_content.find('[data-selectable]').filter('[data-value="' + escape_quotes(value) + '"]:first') : $();
+			return this.getElementWithValue(value, this.$dropdown_content.find('[data-selectable]'));
 		},
 	
 		/**
@@ -1532,6 +1535,28 @@
 		},
 	
 		/**
+		 * Finds the first element with a "data-value" attribute
+		 * that matches the given value.
+		 *
+		 * @param {mixed} value
+		 * @param {object} $els
+		 * @return {object}
+		 */
+		getElementWithValue: function(value, $els) {
+			value = hash_key(value);
+	
+			if (value) {
+				for (var i = 0, n = $els.length; i < n; i++) {
+					if ($els[i].getAttribute('data-value') === value) {
+						return $($els[i]);
+					}
+				}
+			}
+	
+			return $();
+		},
+	
+		/**
 		 * Returns the jQuery element of the item
 		 * matching the given value.
 		 *
@@ -1539,7 +1564,7 @@
 		 * @returns {object}
 		 */
 		getItem: function(value) {
-			return this.$control.children('[data-value="' + escape_quotes(hash_key(value)) + '"]');
+			return this.getElementWithValue(value, this.$control.children());
 		},
 	
 		/**
@@ -1894,7 +1919,7 @@
 			}
 	
 			// allow the callback to abort
-			if (!values.length || (typeof self.settings.onDelete === 'function' && self.settings.onDelete(values) === false)) {
+			if (!values.length || (typeof self.settings.onDelete === 'function' && self.settings.onDelete.apply(self, [values]) === false)) {
 				return false;
 			}
 	
@@ -2105,29 +2130,7 @@
 			}
 	
 			// render markup
-			if (self.settings.render && typeof self.settings.render[templateName] === 'function') {
-				html = self.settings.render[templateName].apply(this, [data, escape_html]);
-			} else {
-				label = data[self.settings.labelField];
-				switch (templateName) {
-					case 'optgroup':
-						html = '<div class="optgroup">' + data.html + "</div>";
-						break;
-					case 'optgroup_header':
-						label = data[self.settings.optgroupLabelField];
-						html = '<div class="optgroup-header">' + escape_html(label) + '</div>';
-						break;
-					case 'option':
-						html = '<div class="option">' + escape_html(label) + '</div>';
-						break;
-					case 'item':
-						html = '<div class="item">' + escape_html(label) + '</div>';
-						break;
-					case 'option_create':
-						html = '<div class="create">Add <strong>' + escape_html(data.input) + '</strong>&hellip;</div>';
-						break;
-				}
-			}
+			html = self.settings.render[templateName].apply(this, [data, escape_html]);
 	
 			// add mandatory attributes
 			if (templateName === 'option' || templateName === 'option_create') {
@@ -2170,7 +2173,7 @@
 	
 		dataAttr: 'data-data',
 		optgroupField: 'optgroup',
-		sortField: null,
+		sortField: '$order',
 		sortDirection: 'asc',
 		valueField: 'value',
 		labelField: 'text',
@@ -2251,6 +2254,7 @@
 		var init_select = function($input, settings_element) {
 			var i, n, tagName;
 			var $children;
+			var order = 0;
 			settings_element.maxItems = !!$input.attr('multiple') ? null : 1;
 	
 			var readData = function($el) {
@@ -2262,16 +2266,22 @@
 			};
 	
 			var addOption = function($option, group) {
+				var value, option;
+	
 				$option = $($option);
 	
-				var value = $option.attr('value') || '';
+				value = $option.attr('value') || '';
 				if (!value.length) return;
 	
-				settings_element.options[value] = readData($option) || {
+				option = readData($option) || {
 					'text'     : $option.text(),
 					'value'    : value,
 					'optgroup' : group
 				};
+	
+				option.$order = ++order;
+				settings_element.options[value] = option;
+	
 				if ($option.is(':selected')) {
 					settings_element.items.push(value);
 				}
@@ -2473,21 +2483,45 @@
 	});
 	
 	Selectize.define('remove_button', function(options) {
-		var self = this;
+		if (this.settings.mode === 'single') return;
 	
-		// override the item rendering method to add a "x" to each
-		this.settings.render.item = function(data) {
-			var label = data[self.settings.labelField];
-			return '<div class="item">' + label + ' <a href="javascript:void(0)" class="remove" tabindex="-1" title="Remove">&times;</a></div>';
+		options = $.extend({
+			label     : '&times;',
+			title     : 'Remove',
+			className : 'remove',
+			append    : true,
+		}, options);
+	
+		var self = this;
+		var html = '<a href="javascript:void(0)" class="' + options.className + '" tabindex="-1" title="' + escape_html(options.title) + '">' + options.label + '</a>';
+	
+		/**
+		 * Appends an element as a child (with raw HTML).
+		 *
+		 * @param {string} html_container
+		 * @param {string} html_element
+		 * @return {string}
+		 */
+		var append = function(html_container, html_element) {
+			var pos = html_container.search(/(<\/[^>]+>\s*)$/);
+			return html_container.substring(0, pos) + html_element + html_container.substring(pos);
 		};
 	
-		// override the setup method to add an extra "click" handler
-		// that listens for mousedown events on the "x"
 		this.setup = (function() {
 			var original = self.setup;
 			return function() {
+				// override the item rendering method to add the button to each
+				if (options.append) {
+					var render_item = self.settings.render.item;
+					self.settings.render.item = function(data) {
+						return append(render_item.apply(this, arguments), html);
+					};
+				}
+	
 				original.apply(this, arguments);
-				this.$control.on('click', '.remove', function(e) {
+	
+				// add event listener
+				this.$control.on('click', '.' + options.className, function(e) {
 					e.preventDefault();
 					var $item = $(e.target).parent();
 					self.setActiveItem($item);
@@ -2495,6 +2529,7 @@
 						self.setCaret(self.items.length);
 					}
 				});
+	
 			};
 		})();
 	
