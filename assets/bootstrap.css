@@ -1,6 +1,10 @@
-
 .yii-selectize {
     margin: 0em 0em 10px;
+    min-width: 220px;
+}
+
+.selectize-input {
+    width: auto;
     min-width: 220px;
 }
 
