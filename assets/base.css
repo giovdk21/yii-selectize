@@ -1,11 +1,21 @@
-
 .yii-selectize {
     margin-top: 0.2em;
     margin-bottom: 0.5em;
     min-width: 180px;
 }
 
-.yii-selectize.full-width {
+.selectize-input {
+    width: auto;
+    min-width: 180px;
+}
+
+.yii-selectize.full-width,
+.yii-selectize.full-width .selectize-input {
+    width: 100%;
+}
+
+.yii-selectize.full-width,
+.yii-selectize.full-width .selectize-input {
     width: 100%;
 }
 
