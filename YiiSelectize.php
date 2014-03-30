@@ -5,7 +5,7 @@
  *
  * @author  Giovanni Derks <giovdk21@gmail.com>
  * @link    https://github.com/giovdk21/yii-selectize
- * @version 0.4
+ * @version 0.5
  *
  * License: MIT License (http://www.opensource.org/licenses/mit-license.php)
  *
