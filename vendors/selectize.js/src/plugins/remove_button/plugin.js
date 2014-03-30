@@ -21,7 +21,7 @@ Selectize.define('remove_button', function(options) {
 		label     : '&times;',
 		title     : 'Remove',
 		className : 'remove',
-		append    : true,
+		append    : true
 	}, options);
 
 	var self = this;
@@ -55,7 +55,9 @@ Selectize.define('remove_button', function(options) {
 			// add event listener
 			this.$control.on('click', '.' + options.className, function(e) {
 				e.preventDefault();
-				var $item = $(e.target).parent();
+				if (self.isLocked) return;
+
+				var $item = $(e.currentTarget).parent();
 				self.setActiveItem($item);
 				if (self.deleteSelection()) {
 					self.setCaret(self.items.length);

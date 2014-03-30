@@ -6,8 +6,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-clean');
 	grunt.loadNpmTasks('grunt-contrib-copy');
+	grunt.loadNpmTasks('grunt-contrib-less');
 	grunt.loadNpmTasks('grunt-replace');
-	grunt.loadNpmTasks('grunt-recess');
 
 	grunt.registerTask('configure', [
 		'clean:pre',
@@ -20,10 +20,10 @@ module.exports = function(grunt) {
 		'concat:less_theme_dependencies',
 		'concat:less_plugins',
 		'concat:js',
-		'recess',
+		'less:uncompressed',
 		'clean_bootstrap2_css',
 		'replace',
-		'concat:js_standalone',
+		'build_standalone',
 		'uglify',
 		'clean:post',
 	]);
@@ -36,8 +36,31 @@ module.exports = function(grunt) {
 	grunt.registerTask('clean_bootstrap2_css', 'Cleans CSS rules ocurring before the header comment.', function() {
 		var file = 'dist/css/selectize.bootstrap2.css';
 		var source = fs.readFileSync(file, 'utf8');
-		fs.writeFileSync(file, source.replace(/^(.|\s)+?\/\*/m, '/*'), 'utf8');
+		grunt.file.write(file, source.replace(/^(.|\s)+?\/\*/m, '/*'));
 		grunt.log.writeln('Cleaned "' + file + '".');
+	});
+
+	grunt.registerTask('build_standalone', '', function() {
+		var files, i, n, source, name, path, modules = [];
+
+		// amd definitions must be changed to be not anonymous
+		// @see https://github.com/brianreavis/selectize.js/issues/89
+		files = [];
+		for (i = 0, n = files_js_dependencies.length; i < n; i++) {
+			path = files_js_dependencies[i];
+			name = path.match(/([^\/]+?).js$/)[1];
+			source = grunt.file.read(path).replace('define(factory);', 'define(\'' + name + '\', factory);');
+			modules.push(source);
+		}
+
+		path = 'dist/js/selectize.js';
+		source = grunt.file.read(path).replace(/define\((.*?)factory\);/, 'define(\'selectize\', $1factory);');
+		modules.push(source);
+
+		// write output
+		path = 'dist/js/standalone/selectize.js';
+		grunt.file.write(path, modules.join('\n\n'));
+		grunt.log.writeln('Built "' + path + '".');
 	});
 
 	var files_js = [
@@ -131,10 +154,8 @@ module.exports = function(grunt) {
 				]
 			}
 		},
-		recess: {
-			options: {
-				compile: true
-			},
+		less: {
+			options: {},
 			uncompressed: {
 				files: {
 					'dist/css/selectize.css': ['dist/less/selectize.less'],
@@ -176,21 +197,6 @@ module.exports = function(grunt) {
 						'bower_components/bootstrap3/less/mixins.less',
 						'dist/less/selectize.bootstrap3.less'
 					]
-				}
-			},
-			js_standalone: {
-				options: {
-					stripBanners: false
-				},
-				files: {
-					'dist/js/standalone/selectize.js': (function() {
-						var files = [];
-						for (var i = 0, n = files_js_dependencies.length; i < n; i++) {
-							files.push(files_js_dependencies[i]);
-						}
-						files.push('dist/js/selectize.js');
-						return files;
-					})()
 				}
 			}
 		},

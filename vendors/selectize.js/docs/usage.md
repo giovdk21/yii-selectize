@@ -42,6 +42,13 @@ $(function() {
 		<td valign="top"><code>false</code></td>
 	</tr>
 	<tr>
+		<td valign="top"><code>createOnBlur</code></td>
+		<td valign="top">
+			If true, when user exits the field (clicks outside of input or presses ESC) new option is created and selected (if `create`-option is enabled).
+		<td valign="top"><code>boolean</code></td>
+		<td valign="top"><code>false</code></td>
+	</tr>
+	<tr>
 		<td valign="top"><code>highlight</code></td>
 		<td valign="top">Toggles match highlighting within the dropdown menu.</td>
 		<td valign="top"><code>boolean</code></td>
@@ -102,6 +109,12 @@ $(function() {
 		<td valign="top"><code>null</code></td>
 	</tr>
 	<tr>
+		<td valign="top"><code>addPrecedence</code></td>
+		<td valign="top">Sets if the "Add..." option should be the default selection in the dropdown.</td>
+		<td valign="top"><code>boolean</code></td>
+		<td valign="top"><code>false</code></td>
+	</tr>
+	<tr>
 		<th valign="top" colspan="4" align="left"><a href="#data_searching" name="data_searching">Data / Searching</a></th>
 	</tr>
 	<tr>
@@ -148,21 +161,30 @@ $(function() {
 	</tr>
 	<tr>
 		<td valign="top"><code>sortField</code></td>
-		<td valign="top">The name of the property to sort by. This is only used when the score of two or more items is identical.</td>
-		<td valign="top"><code>string</code></td>
-		<td valign="top"><code>null</code></td>
-	</tr>
-	<tr>
-		<td valign="top"><code>sortDirection</code></td>
-		<td valign="top">Sort direction ("asc" or "desc").</td>
-		<td valign="top"><code>string</code></td>
-		<td valign="top"><code>'asc'</code></td>
+		<td valign="top">
+			A single field or an array of fields to sort by. Each item in the array should be an object containing at
+			least a "field" property. Optionally, "direction" can be set to "asc" or "desc". The
+			order of the array defines the sort precedence.<br><br>
+
+			Unless present, a special "$score" field will be automatically added to the beginning
+			of the sort list. This will make results sorted primarily by match quality (descending).<br><br>
+
+			For more information, see the <a href="https://github.com/brianreavis/sifter.js#sifterjs">sifter documentation</a>.
+		</td>
+		<td valign="top"><code>string|array</code></td>
+		<td valign="top"><code>'$order'</code></td>
 	</tr>
 	<tr>
 		<td valign="top"><code>searchField</td>
 		<td valign="top">An array of property names to analyze when filtering options.</td>
 		<td valign="top"><code>array</code></td>
 		<td valign="top"><code>['text']</code></td>
+	</tr>
+	<tr>
+		<td valign="top"><code>searchConjunction</td>
+		<td valign="top">When searching for multiple terms (separated by a space), this is the operator used. Can be "and" or "or".</td>
+		<td valign="top"><code>string</code></td>
+		<td valign="top"><code>'and'</code></td>
 	</tr>
 	<tr>
 		<td valign="top"><code>optgroupOrder</td>

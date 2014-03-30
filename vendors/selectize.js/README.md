@@ -24,7 +24,7 @@ Selectize is an extensible jQuery-based custom &lt;select&gt; UI control. It's u
 
 ### Dependencies
 
-- [jquery](https://github.com/jquery/jquery)
+- [jquery](https://github.com/jquery/jquery) (1.7 and greater)
 - [sifter](https://github.com/brianreavis/sifter.js) (bundled in ["standalone" build](dist/js/standalone))
 - [microplugin](https://github.com/brianreavis/microplugin.js) (bundled in ["standalone" build](dist/js/standalone))
 
@@ -45,6 +45,8 @@ All pre-built files needed to use Selectize can be found in the ["dist"](dist/) 
 - [**css/**](dist/css)
 	- [selectize.css](dist/css/selectize.css) — Core styles
 	- [selectize.default.css](dist/css/selectize.default.css) — Default theme (with core styles)
+	- [selectize.bootstrap2.css](dist/css/selectize.bootstrap2.css) - Bootstrap 2 theme
+	- [selectize.bootstrap3.css](dist/css/selectize.bootstrap3.css) - Bootstrap 3 theme
 
 ### Usage
 
@@ -68,7 +70,6 @@ By default, all [plugins](src/plugins) are included. To hand-pick what plugins (
 
 ```sh
 # dependencies
-npm install -g grunt-cli
 npm install -g bower
 npm install
 

@@ -5,11 +5,13 @@ Selectize.defaults = {
 	persist: true,
 	diacritics: true,
 	create: false,
+	createOnBlur: false,
 	highlight: true,
 	openOnFocus: true,
 	maxOptions: 1000,
 	maxItems: null,
 	hideSelected: null,
+	addPrecedence: false,
 	preload: false,
 
 	scrollDuration: 60,
@@ -17,14 +19,15 @@ Selectize.defaults = {
 
 	dataAttr: 'data-data',
 	optgroupField: 'optgroup',
-	sortField: '$order',
-	sortDirection: 'asc',
 	valueField: 'value',
 	labelField: 'text',
 	optgroupLabelField: 'label',
 	optgroupValueField: 'value',
 	optgroupOrder: null,
+
+	sortField: '$order',
 	searchField: ['text'],
+	searchConjunction: 'and',
 
 	mode: null,
 	wrapperClass: 'selectize-control',
